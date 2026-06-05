@@ -1,34 +1,200 @@
 <!DOCTYPE html>
 <html>
+<head>
+<meta charset="UTF-8">
+<title>Car Runner</title>
+
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    background:#87CEEB;
+}
+
+canvas{
+    display:block;
+    margin:auto;
+    background:#87CEEB;
+}
+
+#score{
+    position:absolute;
+    top:10px;
+    left:10px;
+    font-size:30px;
+    font-family:Arial;
+    font-weight:bold;
+}
+</style>
+</head>
 <body>
 
-<canvas id="game" width="800" height="400" style="border:1px solid black"></canvas>
+<div id="score">Score: 0</div>
+
+<canvas id="game" width="1000" height="500"></canvas>
 
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-function gameLoop() {
-    ctx.clearRect(0,0,800,400);
+let score = 0;
+let gameOver = false;
 
-    // Sky
-    ctx.fillStyle = "skyblue";
-    ctx.fillRect(0,0,800,400);
+const car = {
+    x:120,
+    y:340,
+    width:80,
+    height:40,
+    velY:0,
+    jumping:false
+};
+
+const gravity = 0.8;
+const groundY = 380;
+
+let obstacles = [];
+let roadOffset = 0;
+
+document.addEventListener("keydown", e => {
+
+    if(e.code === "Space" && !car.jumping){
+        car.velY = -15;
+        car.jumping = true;
+    }
+
+});
+
+function spawnObstacle(){
+    obstacles.push({
+        x: canvas.width,
+        y: groundY - 40,
+        width: 30,
+        height: 40
+    });
+}
+
+setInterval(() => {
+    if(!gameOver){
+        spawnObstacle();
+    }
+}, 1500);
+
+function update(){
+
+    if(gameOver) return;
+
+    roadOffset += 8;
+
+    score++;
+
+    document.getElementById("score").innerText =
+        "Score: " + Math.floor(score / 10);
+
+    car.velY += gravity;
+    car.y += car.velY;
+
+    if(car.y > 340){
+        car.y = 340;
+        car.velY = 0;
+        car.jumping = false;
+    }
+
+    for(let obs of obstacles){
+
+        obs.x -= 8;
+
+        if(
+            car.x < obs.x + obs.width &&
+            car.x + car.width > obs.x &&
+            car.y < obs.y + obs.height &&
+            car.y + car.height > obs.y
+        ){
+            gameOver = true;
+
+            setTimeout(()=>{
+                alert("Game Over!\nScore: " + Math.floor(score/10));
+                location.reload();
+            },100);
+        }
+    }
+
+    obstacles = obstacles.filter(o => o.x > -100);
+}
+
+function draw(){
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // Sun
+    ctx.fillStyle = "yellow";
+    ctx.beginPath();
+    ctx.arc(850,80,40,0,Math.PI*2);
+    ctx.fill();
 
     // Ground
-    ctx.fillStyle = "green";
-    ctx.fillRect(0,300,800,100);
+    ctx.fillStyle = "#3CB043";
+    ctx.fillRect(0,groundY,canvas.width,120);
 
-    // Car
+    // Road
+    ctx.fillStyle = "#333";
+    ctx.fillRect(0,groundY-20,canvas.width,60);
+
+    // Road lines
+    ctx.fillStyle = "white";
+
+    for(let i=-100;i<canvas.width+100;i+=120){
+
+        ctx.fillRect(
+            i - (roadOffset % 120),
+            groundY+5,
+            60,
+            10
+        );
+    }
+
+    // Car body
     ctx.fillStyle = "red";
-    ctx.fillRect(100,250,60,30);
+    ctx.fillRect(
+        car.x,
+        car.y,
+        car.width,
+        car.height
+    );
+
+    // Car roof
+    ctx.fillRect(
+        car.x + 15,
+        car.y - 15,
+        40,
+        20
+    );
 
     // Wheels
     ctx.fillStyle = "black";
+
     ctx.beginPath();
-    ctx.arc(115,280,8,0,Math.PI*2);
-    ctx.arc(145,280,8,0,Math.PI*2);
+    ctx.arc(car.x+15, car.y+40, 10, 0, Math.PI*2);
+    ctx.arc(car.x+65, car.y+40, 10, 0, Math.PI*2);
     ctx.fill();
+
+    // Obstacles
+    ctx.fillStyle = "brown";
+
+    for(let obs of obstacles){
+
+        ctx.fillRect(
+            obs.x,
+            obs.y,
+            obs.width,
+            obs.height
+        );
+    }
+}
+
+function gameLoop(){
+
+    update();
+    draw();
 
     requestAnimationFrame(gameLoop);
 }
