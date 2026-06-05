@@ -5,3 +5,6 @@ Space Bar = JUMP
 
 AIM => Survive as long as possible.
 Best of luck!
+
+its basic game involving simple physics and mechanisms and a BIGGGGGG sun with brown obstacles
+it increases your muscle memory and rythm.
