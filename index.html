@@ -1,159 +1,40 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Web Game</title>
-        <style>
-            body{
-                margin: 0;
-                overflow: hidden;
-                background:skyblue;
-            }
+<body>
 
-            canvas {
-                display: block;
-                margin: auto;
-                background:linear-gradient(to top, #7ec850, #87ceeb);
+<canvas id="game" width="800" height="400" style="border:1px solid black"></canvas>
 
-            }
-
-            #score {
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                font-size: 24px;
-                font-family: Arial;
-                color: white;
-            }
-            </style>
-            </head>
-
-            <body>
-
-                <div id="score">Score: 0</div>
-
-                <canvas id="game" width="900" height="400"> </canvas>
-
-            <script>
-                const canvas = document.getElementByID("game");
-                const ctx = canvas.getContext("2d");
-
-                let score = 0;
-
-                const car = {
-                    x: 120,
-                    y: 250,
-                    width: 60,
-                    height: 30,
-                    velocityY: 0,
-                    jumping: false
-
-                };
-
-                const gravity = 0.7;
-
-                let obstacles = [];
-
-                function spawnObstacle() {
-                    obstacles.push({
-                        x: canvas.width,
-                        y: 280,
-                        width: 25,
-                        height: 50
-                    });
-                }
-
-                setInterval(spawnObstacle, 1800);
-
-
-                document.addEventListener("keydown", e => {
-                    if (e.code === "Space" && !car.jumping) {
-                        car.velocityY = -13;
-                        car.jumping = true;
-                    }
-                });
-
-                function drawHill() {
-                    ctx.fillstyle = "#4CAF50";
-
-                    ctx.beginPath();
-                    ctx.moveTo(0, 300);
-
-                    for (let x = 0; x <= canvas.width; x++) {
-                        let y = 300 + Math.sin((x + score)* 0.02)*20;
-                        ctx.lineTo(x, y);
-                    }
-
-                    ctx.lineTo(canvas.width, canvas.height);
-                    ctx.lineTo(0, canvas.height);
-                    ctx.fill();
-                }
-
-                function update() {
-
-                    car.velocityY += gravity;
-                    car.y += car.velocityY
-
-                    if (car.y > 250) {
-                        car.y = 250;
-                        car.velocityY = 0;
-                        car.jumping = false;
-                    }
-
-                    obstacles.forEach(obs => {
-                        obs.x -= 6;
-
-                        if (
-                            car.x < obs.x + obs.width &&
-                            car.x + car.width > obs.x &&
-                            car.y < obs.y + obs.height &&
-                            car.y + car.height > obs.y
-
-                        ) {
-                            alert("Game Over! Score: " + score);
-                            location.reload();
-                        }
-                    });
-
-                    obstacles = obstacles.filter(o => o.x > -50);
-
-                    score++;
-                    document.getElementById("score").innerText = "Score: " + Math.floor(score / 10);
-
-                }
-
-                function draw() {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                    drawHill();
-
-                    // Car Body
-                    ctx.fillstyle = "red";
-                    ctx.fillRect(car.x, car.y, car.width, car.height);
-
-                    //Wheels
-                    ctx.fillStyle = "black";
-                    ctx.beginPath();
-                    ctx.arc(car.x + 12, car.y + 30, 8, 0, Math.PI * 2);
-                    ctx.arc(car.x + 48, car.y + 30, 8, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    //Obstacles
-                    ctx.fillStyle = "brown";
-                    obstacles.forEach(obs => {
-                            ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-    });
-}
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
 function gameLoop() {
-    update();
-    draw();
+    ctx.clearRect(0,0,800,400);
+
+    // Sky
+    ctx.fillStyle = "skyblue";
+    ctx.fillRect(0,0,800,400);
+
+    // Ground
+    ctx.fillStyle = "green";
+    ctx.fillRect(0,300,800,100);
+
+    // Car
+    ctx.fillStyle = "red";
+    ctx.fillRect(100,250,60,30);
+
+    // Wheels
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.arc(115,280,8,0,Math.PI*2);
+    ctx.arc(145,280,8,0,Math.PI*2);
+    ctx.fill();
+
     requestAnimationFrame(gameLoop);
 }
 
 gameLoop();
+</script>
 
-                
-            </script>
-
-            </body>
-            </html>
+</body>
+</html>
